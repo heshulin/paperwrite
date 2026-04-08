@@ -1,0 +1,11 @@
+paper/build/
+*.aux
+*.log
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+*.out
+*.toc
+refs/papers/*.pdf
