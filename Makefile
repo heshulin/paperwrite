@@ -1,10 +1,10 @@
 .PHONY: pdf clean watch
 
 pdf:
-	cd paper && latexmk -pdf -outdir=build main.tex
+	cd paper && conda run -n paperwrite tectonic -o build main.tex
 
 clean:
-	cd paper && latexmk -C -outdir=build main.tex
+	rm -f paper/build/*
 
 watch:
-	cd paper && latexmk -pdf -pvc -outdir=build main.tex
+	cd paper && conda run -n paperwrite tectonic -o build --watch main.tex
