@@ -1,8 +1,8 @@
 # paperwrite
 
-学术论文 vibe writing 脚手架工具——想清楚再动笔。
+学术论文 vibe writing 脚手架工具——**想清楚再动笔**。
 
-将论文写作拆解为三个层次、五个阶段，用目录结构强制你从思考到大纲再到成文，始终从上游改起。
+写论文最怕什么？打开 LaTeX 就开始憋，憋了一下午写了两行还删了。paperwrite 的思路很简单：**先想、再排、最后写**，用三个文件夹把思考、大纲、成文强制分开。
 
 ## 安装
 
@@ -10,7 +10,7 @@
 pip install git+https://github.com/heshulin/paperwrite.git
 ```
 
-需要 Python >= 3.8。编译 PDF 还需要 [tectonic](https://tectonic-typesetting.github.io/)：
+需要 Python >= 3.8。编译 PDF 还需要安装 [tectonic](https://tectonic-typesetting.github.io/)：
 
 ```bash
 # macOS
@@ -20,75 +20,119 @@ brew install tectonic
 conda install -c conda-forge tectonic
 ```
 
-## 快速开始
+## 30 秒上手
 
 ```bash
-# 1. 创建论文项目（交互式选择模板）
+# 创建一个论文项目
 paperwrite init my-paper
 cd my-paper
 
-# 2. 或直接指定模板
-paperwrite init my-paper --template acl_long
-
-# 3. 检查环境和依赖
+# 检查一下环境是否 OK
 paperwrite doctor
 
-# 4. 查看进度
-paperwrite status
-
-# 5. 在 sparks/ 里开始思考，在 outline/ 里规划大纲，最后在 paper/ 里写 LaTeX
-
-# 6. 编译 PDF
-paperwrite build
-# 或
-make pdf
+# 开始写！先在 sparks/motivation.md 写下你要解决什么问题
 ```
 
-## 支持的模板
+## 写论文的正确姿势
 
-| 模板 | 说明 | 特殊章节 |
-|------|------|----------|
+### 第一步：选模板
+
+创建项目时选一个目标会议模板，不同模板会自动生成对应的章节结构：
+
+```bash
+paperwrite init my-paper              # 交互式选择
+paperwrite init my-paper -t acl_long  # 直接指定
+```
+
+| 模板 | 适用场景 | 特殊章节 |
+|------|---------|----------|
 | `default` | 通用学术论文 | — |
-| `acl_long` | ACL 长文 (8页) | Limitations |
+| `acl_long` | ACL 长文 (8页) | Analysis, Limitations |
 | `acl_short` | ACL 短文 (4页) | Limitations |
 | `neurips` | NeurIPS (9页) | Broader Impact |
 | `cvpr` | CVPR (8页) | — |
-| `ieee` | IEEE 会议论文 | IEEE 格式 |
+| `ieee` | IEEE 会议论文 | IEEE 双栏格式 |
 
-## 工作流
+### 第二步：在 sparks/ 里自由思考
 
-核心原则：**想清楚再动笔**。`sparks` 里想、`outline` 里排、`paper` 里写，永远从上游改起。
-
-### 三层目录结构
+别碰 LaTeX，别管格式，就在 Markdown 里把脑子里的东西倒出来：
 
 ```
-sparks/     思考层 — 动机、创新点、实验想法（Markdown）
-outline/    桥梁层 — 各节段落级大纲（Markdown）
-paper/      输出层 — LaTeX 源文件，可编译
-refs/       参考层 — 文献、精读笔记、实验数据
-scripts/    工具层 — 生成图表的脚本
+sparks/
+├── motivation.md     # 为什么要做这个？现有方案哪里不行？
+├── innovations.md    # 我的核心贡献是什么？（2-3 点）
+├── experiments.md    # 怎么验证？用什么数据集？和谁比？
+├── results.md        # 实验结果说明了什么故事？
+├── related_work.md   # 读过的论文笔记，随手扔这里
+├── writing_log.md    # 写作日志，记录关键决策
+└── questions.md      # 还有哪些问题没想清楚？
 ```
 
-### 五个阶段
+**这一步不需要写完整句子，关键词、碎片想法都可以。**
 
-| 阶段 | 做什么 | 在哪里 |
-|------|--------|--------|
-| **Spark** | 自由思考：研究动机、创新点、实验设计、相关工作笔记 | `sparks/` |
-| **Outline** | 规划结构：先定骨架和页数预算，再按顺序填段落级大纲 | `outline/` |
-| **Draft** | 转写 LaTeX：逐节把大纲转为论文 | `paper/sections/` |
-| **Refine** | 三层迭代：发现问题回到上游修改 | 全部 |
-| **Polish** | 定稿提交：选模板、检查引用、控制页数 | `paper/` |
+### 第三步：在 outline/ 里排大纲
 
-## CLI 命令
+想清楚之后，把碎片整理成段落级大纲。每段写清楚"这一段要说什么、用什么证据、引哪篇论文"。
+
+推荐的填写顺序（不是论文顺序，是写作顺序）：
+
+1. `outline/method.md` — 你最清楚的部分，先写
+2. `outline/experiments.md` — 实验怎么做的
+3. `outline/results.md` — 结果怎么解读
+4. `outline/introduction.md` — 知道全貌后再写引言
+5. `outline/related_work.md` — 把 sparks 里的笔记归类
+6. `outline/discussion.md` — 局限性和讨论
+7. `outline/conclusion.md` — 总结
+8. `outline/abstract.md` — 最后写摘要
+
+### 第四步：转写 LaTeX
+
+大纲稳定后，逐节把 `outline/*.md` 翻译成 `paper/sections/*.tex`。
+
+```bash
+# 每写完一节，编译看看效果
+paperwrite build
+```
+
+### 第五步：迭代修改
+
+写着写着发现问题？**别直接改 LaTeX，回到上游去改**：
+
+- 实验缺 baseline → 回 `sparks/experiments.md` 想 → 更新 `outline/` → 改 `paper/`
+- 论证逻辑不对 → 回 `outline/` 重排段落
+- 想到 reviewer 可能会问什么 → 记到 `sparks/questions.md`
+
+### 日常使用的几个命令
+
+```bash
+paperwrite status          # 看看哪些文件写了、哪些还没动
+paperwrite count           # 统计各节字数，控制页数
+paperwrite section appendix  # 加一个新小节（自动创建 outline + tex + 更新 main.tex）
+paperwrite doctor          # 检查环境和项目是否完整
+paperwrite build           # 编译 PDF
+```
+
+## 核心理念
 
 ```
-paperwrite init <name>           创建论文项目
-paperwrite init <name> -t <tpl>  指定模板创建
-paperwrite build                 编译 PDF（需要 tectonic）
-paperwrite status                显示写作进度
-paperwrite doctor                检查依赖和项目完整性
-paperwrite count                 统计各节字数
-paperwrite section <name>        新增自定义小节
+sparks（想）→ outline（排）→ paper（写）→ 发现问题 → 回到 sparks 改
+```
+
+**永远从上游改起。** 改实验设计不是去改 LaTeX 表格，而是回到 `sparks/experiments.md` 重新想清楚，然后顺着 outline 到 paper 传递下去。
+
+## 目录结构总览
+
+```
+my-paper/
+├── sparks/          随便写的思考碎片（Markdown）
+├── outline/         段落级大纲（Markdown）
+├── paper/
+│   ├── main.tex     论文主文件
+│   ├── preamble.tex 宏包配置
+│   ├── references.bib
+│   └── sections/    各节 LaTeX 源文件
+├── refs/            参考文献和数据
+└── scripts/         画图、生成表格的脚本
 ```
 
 ## 从源码安装
