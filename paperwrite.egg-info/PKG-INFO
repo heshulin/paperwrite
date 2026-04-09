@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: paperwrite
+Version: 0.1.0
+Summary: Academic paper vibe writing scaffolding tool
+Requires-Python: >=3.8
+Requires-Dist: click

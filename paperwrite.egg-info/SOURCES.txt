@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+cli/__init__.py
+cli/cli.py
+cli/templates.py
+paperwrite.egg-info/PKG-INFO
+paperwrite.egg-info/SOURCES.txt
+paperwrite.egg-info/dependency_links.txt
+paperwrite.egg-info/entry_points.txt
+paperwrite.egg-info/requires.txt
+paperwrite.egg-info/top_level.txt
