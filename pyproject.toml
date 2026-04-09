@@ -6,8 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "paperwrite"
 version = "0.1.0"
 description = "Academic paper vibe writing scaffolding tool"
+readme = "README.md"
+license = {text = "MIT"}
 requires-python = ">=3.8"
 dependencies = ["click"]
+
+[project.urls]
+Repository = "https://github.com/heshulin/paperwrite"
 
 [tool.setuptools.packages.find]
 include = ["cli*"]

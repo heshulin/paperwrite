@@ -1,71 +1,104 @@
-# Paper Title
+# paperwrite
 
-> 一句话描述
+学术论文 vibe writing 脚手架工具——想清楚再动笔。
 
-**状态**: Spark
+将论文写作拆解为三个层次、五个阶段，用目录结构强制你从思考到大纲再到成文，始终从上游改起。
 
-## 目录结构
+## 安装
+
+```bash
+pip install git+https://github.com/heshulin/paperwrite.git
+```
+
+需要 Python >= 3.8。编译 PDF 还需要 [tectonic](https://tectonic-typesetting.github.io/)：
+
+```bash
+# macOS
+brew install tectonic
+
+# conda
+conda install -c conda-forge tectonic
+```
+
+## 快速开始
+
+```bash
+# 1. 创建论文项目（交互式选择模板）
+paperwrite init my-paper
+cd my-paper
+
+# 2. 或直接指定模板
+paperwrite init my-paper --template acl_long
+
+# 3. 检查环境和依赖
+paperwrite doctor
+
+# 4. 查看进度
+paperwrite status
+
+# 5. 在 sparks/ 里开始思考，在 outline/ 里规划大纲，最后在 paper/ 里写 LaTeX
+
+# 6. 编译 PDF
+paperwrite build
+# 或
+make pdf
+```
+
+## 支持的模板
+
+| 模板 | 说明 | 特殊章节 |
+|------|------|----------|
+| `default` | 通用学术论文 | — |
+| `acl_long` | ACL 长文 (8页) | Limitations |
+| `acl_short` | ACL 短文 (4页) | Limitations |
+| `neurips` | NeurIPS (9页) | Broader Impact |
+| `cvpr` | CVPR (8页) | — |
+| `ieee` | IEEE 会议论文 | IEEE 格式 |
+
+## 工作流
+
+核心原则：**想清楚再动笔**。`sparks` 里想、`outline` 里排、`paper` 里写，永远从上游改起。
+
+### 三层目录结构
 
 ```
 sparks/     思考层 — 动机、创新点、实验想法（Markdown）
-outline/    桥梁层 — 各节详细大纲（Markdown）
+outline/    桥梁层 — 各节段落级大纲（Markdown）
 paper/      输出层 — LaTeX 源文件，可编译
 refs/       参考层 — 文献、精读笔记、实验数据
 scripts/    工具层 — 生成图表的脚本
 ```
 
-## 工作流
+### 五个阶段
 
-> 核心原则：想清楚再动笔。`sparks` 里想、`outline` 里排、`paper` 里写，永远从上游改起。
+| 阶段 | 做什么 | 在哪里 |
+|------|--------|--------|
+| **Spark** | 自由思考：研究动机、创新点、实验设计、相关工作笔记 | `sparks/` |
+| **Outline** | 规划结构：先定骨架和页数预算，再按顺序填段落级大纲 | `outline/` |
+| **Draft** | 转写 LaTeX：逐节把大纲转为论文 | `paper/sections/` |
+| **Refine** | 三层迭代：发现问题回到上游修改 | 全部 |
+| **Polish** | 定稿提交：选模板、检查引用、控制页数 | `paper/` |
 
-### Phase 1: Spark — 自由思考
+## CLI 命令
 
-全部在 `sparks/` 中进行，纯 Markdown，不碰 LaTeX，不操心格式。
+```
+paperwrite init <name>           创建论文项目
+paperwrite init <name> -t <tpl>  指定模板创建
+paperwrite build                 编译 PDF（需要 tectonic）
+paperwrite status                显示写作进度
+paperwrite doctor                检查依赖和项目完整性
+paperwrite count                 统计各节字数
+paperwrite section <name>        新增自定义小节
+```
 
-1. **`sparks/motivation.md`** — 一切的起点。我要解决什么问题？为什么现有方案不行？我的方法凭什么更好？
-2. **`sparks/innovations.md`** — 提炼 2-3 个核心贡献点，练习用一句话总结整篇论文
-3. **`sparks/experiments.md`** — 怎么证明方法有效：数据集、对比方法、评估指标
-4. **`sparks/related_work.md`** — 边读论文边扔笔记，格式："论文X做了Y，但没解决Z"
-
-### Phase 2: Outline — 规划结构
-
-先定 `outline/structure.md` 确认论文骨架和页数预算，然后**按写作顺序**逐个填大纲：
-
-1. `outline/method.md` — 先写方法，这是你最清楚的部分
-2. `outline/experiments.md` — 实验设置紧跟方法
-3. `outline/results.md` — 有了实验才有结果
-4. `outline/introduction.md` — 知道全貌后再写引言
-5. `outline/related_work.md` — 从 sparks 笔记整理分类
-6. `outline/discussion.md` — 讨论局限性
-7. `outline/conclusion.md` — 总结
-8. `outline/abstract.md` — 最后写摘要
-
-每个大纲写到段落级别：每段说什么、用什么证据、引哪篇论文。
-
-### Phase 3: Draft — 转写 LaTeX
-
-大纲稳定后，逐节把 `outline/*.md` 转为 `paper/sections/*.tex`，顺序同上。每写完一节 `make pdf` 看效果。图表脚本放 `scripts/`，生成的图放 `paper/figures/`。
-
-### Phase 4: Refine — 三层迭代
-
-写着写着发现问题时，回到上游修改：
-
-- 实验缺 baseline → 回 `sparks/experiments.md` 想清楚 → 更新 `outline/` → 改 `paper/`
-- 论证逻辑不通 → 回 `outline/` 重排段落顺序
-- 想到 reviewer 会问什么 → 记到 `sparks/questions.md`
-
-在 `sparks/writing_log.md` 里记录关键决策，方便下次接上。
-
-### Phase 5: Polish — 定稿提交
-
-- 选定会议模板，改 `paper/main.tex` 和 `paper/preamble.tex`
-- 检查引用完整性（`references.bib`）
-- 控制页数，`make pdf` 出最终版
-
-## 构建
+## 从源码安装
 
 ```bash
-make pdf     # 编译 PDF
-make clean   # 清理编译产物
-make watch   # 持续编译（保存即编译）
+git clone https://github.com/heshulin/paperwrite.git
+cd paperwrite
+pip install -e .
 ```
+
+## License
+
+MIT

@@ -1,22 +1,8 @@
-"""All template file contents for paperwrite project scaffolding."""
+"""Multi-template system for paperwrite project scaffolding."""
 
-DIRS = [
-    "sparks",
-    "outline",
-    "paper/sections",
-    "paper/figures",
-    "paper/tables",
-    "paper/build",
-    "refs/papers",
-    "refs/notes",
-    "refs/data",
-    "scripts/figures",
-    "scripts/tables",
-]
+# ── Shared sparks templates (common to all paper types) ──────────────────
 
-# {relative_path: content}
-FILES = {
-    # ── sparks/ ──
+SPARKS_FILES = {
     "sparks/motivation.md": """\
 # 研究动机
 
@@ -82,24 +68,21 @@ FILES = {
 
 ## 预判 Reviewer 会问什么？
 """,
-    # ── outline/ ──
-    "outline/structure.md": """\
+}
+
+# ── Shared outline template generator ────────────────────────────────────
+
+OUTLINE_TEMPLATES = {
+    "structure": """\
 # 论文结构
 
-- Abstract (~150 words)
-- Introduction (~1.5 pages)
-- Related Work (~1.5 pages)
-- Method (~2 pages)
-- Experiments (~1 page)
-- Results (~1.5 pages)
-- Discussion (~0.5 pages)
-- Conclusion (~0.5 pages)
+{page_budget}
 
 ## 各节之间的依赖关系
 
 ## 读者阅读顺序 vs 写作顺序
 """,
-    "outline/abstract.md": """\
+    "abstract": """\
 # Abstract 大纲
 
 ## 问题（1-2句）
@@ -110,7 +93,7 @@ FILES = {
 
 ## 意义（1句）
 """,
-    "outline/introduction.md": """\
+    "introduction": """\
 # Introduction 大纲
 
 ## Para 1: Hook — 用什么例子引入问题
@@ -123,7 +106,7 @@ FILES = {
 
 ## Para 5: 贡献列表
 """,
-    "outline/related_work.md": """\
+    "related_work": """\
 # Related Work 大纲
 
 ## 分类方式（按方法/按问题/按时间线）
@@ -136,7 +119,7 @@ FILES = {
 
 ## 和我们工作的关系总结
 """,
-    "outline/method.md": """\
+    "method": """\
 # Method 大纲
 
 ## 整体框架概述
@@ -149,7 +132,7 @@ FILES = {
 
 ## 训练/推理流程
 """,
-    "outline/experiments.md": """\
+    "experiments": """\
 # Experiments 大纲
 
 ## 实验设置
@@ -163,7 +146,7 @@ FILES = {
 
 ## 分析实验
 """,
-    "outline/results.md": """\
+    "results": """\
 # Results 大纲
 
 ## 主表结果分析
@@ -174,7 +157,16 @@ FILES = {
 
 ## 可视化说明了什么
 """,
-    "outline/discussion.md": """\
+    "analysis": """\
+# Analysis 大纲
+
+## 深入分析
+
+## 案例分析
+
+## 定性分析
+""",
+    "discussion": """\
 # Discussion 大纲
 
 ## 结果意味着什么
@@ -183,54 +175,289 @@ FILES = {
 
 ## 潜在的负面社会影响（如需要）
 """,
-    "outline/conclusion.md": """\
+    "limitations": """\
+# Limitations 大纲
+
+## 方法层面的局限性
+
+## 数据层面的局限性
+
+## 适用范围
+""",
+    "broader_impact": """\
+# Broader Impact 大纲
+
+## 正面社会影响
+
+## 潜在风险和负面后果
+
+## 缓解措施
+
+## 公平性和伦理考量
+""",
+    "conclusion": """\
 # Conclusion 大纲
 
 ## 总结（呼应 Introduction）
 
 ## Future Work
 """,
-    # ── paper/ ──
-    "paper/main.tex": """\
-\\documentclass[11pt]{article}
-\\input{preamble}
+}
 
-\\title{__TITLE__}
-\\author{Author Name}
-\\date{\\today}
+# ── Shared LaTeX section template ────────────────────────────────────────
 
-\\begin{document}
+LATEX_SECTION_TEMPLATE = """\
+\\section{{{title}}}
+% TODO: 从 outline/{name}.md 转写
+"""
+
+LATEX_SUBSECTION_TEMPLATE = """\
+\\section{{{title}}}
+% TODO: 从 outline/{name}.md 转写
+"""
+
+# ── Section title mapping ───────────────────────────────────────────────
+
+SECTION_TITLES = {
+    "abstract": "Abstract",
+    "introduction": "Introduction",
+    "related_work": "Related Work",
+    "method": "Method",
+    "experiments": "Experiments",
+    "results": "Results",
+    "analysis": "Analysis",
+    "discussion": "Discussion",
+    "limitations": "Limitations",
+    "broader_impact": "Broader Impact",
+    "conclusion": "Conclusion",
+}
+
+# ── Template definitions ─────────────────────────────────────────────────
+
+TEMPLATES = {
+    "default": {
+        "name": "默认模板",
+        "description": "通用学术论文结构",
+        "page_budget": "\n".join([
+            "- Abstract (~150 words)",
+            "- Introduction (~1.5 pages)",
+            "- Related Work (~1.5 pages)",
+            "- Method (~2 pages)",
+            "- Experiments (~1 page)",
+            "- Results (~1.5 pages)",
+            "- Discussion (~0.5 pages)",
+            "- Conclusion (~0.5 pages)",
+        ]),
+        "sections": [
+            "abstract", "introduction", "related_work", "method",
+            "experiments", "results", "discussion", "conclusion",
+        ],
+        "documentclass": r"\documentclass[11pt]{article}",
+        "extra_preamble": "",
+        "extra_bibstyle": r"\bibliographystyle{plain}",
+    },
+    "acl_long": {
+        "name": "ACL Long Paper",
+        "description": "ACL 长文，含 Limitations 节",
+        "page_budget": "\n".join([
+            "- Abstract (~150 words)",
+            "- Introduction (~1.5 pages)",
+            "- Related Work (~1 page)",
+            "- Method (~2 pages)",
+            "- Experiments (~1 page)",
+            "- Results (~1 page)",
+            "- Analysis (~0.5 pages)",
+            "- Limitations (~0.5 pages)",
+            "- Conclusion (~0.5 pages)",
+            "总计: 最多 8 页正文 + 无限制参考文献",
+        ]),
+        "sections": [
+            "abstract", "introduction", "related_work", "method",
+            "experiments", "results", "analysis", "limitations", "conclusion",
+        ],
+        "documentclass": r"\documentclass[11pt]{article}",
+        "extra_preamble": r"""
+% ACL Rolling Review style
+% \usepackage{acl}
+% 如使用 acl style，请取消注释并删除下一行
+""",
+        "extra_bibstyle": r"\bibliographystyle{acl_natbib}",
+    },
+    "acl_short": {
+        "name": "ACL Short Paper",
+        "description": "ACL 短文，4 页正文，含 Limitations 节",
+        "page_budget": "\n".join([
+            "- Abstract (~100 words)",
+            "- Introduction (~0.5 pages)",
+            "- Method (~1 page)",
+            "- Experiments & Results (~1.5 pages)",
+            "- Limitations (~0.3 pages)",
+            "- Conclusion (~0.2 pages)",
+            "总计: 最多 4 页正文 + 无限制参考文献",
+        ]),
+        "sections": [
+            "abstract", "introduction", "method",
+            "experiments", "results", "limitations", "conclusion",
+        ],
+        "documentclass": r"\documentclass[11pt]{article}",
+        "extra_preamble": r"""
+% ACL Rolling Review style
+% \usepackage{acl}
+""",
+        "extra_bibstyle": r"\bibliographystyle{acl_natbib}",
+    },
+    "neurips": {
+        "name": "NeurIPS Paper",
+        "description": "NeurIPS，含 Broader Impact 节",
+        "page_budget": "\n".join([
+            "- Abstract (~150 words)",
+            "- Introduction (~1 page)",
+            "- Related Work (~1 page)",
+            "- Method (~2 pages)",
+            "- Experiments (~1 page)",
+            "- Results (~1.5 pages)",
+            "- Broader Impact (~0.5 pages)",
+            "- Conclusion (~0.5 pages)",
+            "总计: 最多 9 页正文 + 无限制参考文献",
+        ]),
+        "sections": [
+            "abstract", "introduction", "related_work", "method",
+            "experiments", "results", "broader_impact", "conclusion",
+        ],
+        "documentclass": r"\documentclass{article}",
+        "extra_preamble": r"""
+% NeurIPS style
+% \usepackage[final]{neurips_2025}
+% 如使用 neurips style，请取消注释并下载对应 .sty 文件
+""",
+        "extra_bibstyle": r"\bibliographystyle{plain}",
+    },
+    "cvpr": {
+        "name": "CVPR Paper",
+        "description": "CVPR，8 页正文",
+        "page_budget": "\n".join([
+            "- Abstract (~150 words)",
+            "- Introduction (~1 page)",
+            "- Related Work (~1 page)",
+            "- Method (~2 pages)",
+            "- Experiments (~1.5 pages)",
+            "- Results (~1 page)",
+            "- Discussion (~0.5 pages)",
+            "- Conclusion (~0.5 pages)",
+            "总计: 最多 8 页正文 + 无限制参考文献",
+        ]),
+        "sections": [
+            "abstract", "introduction", "related_work", "method",
+            "experiments", "results", "discussion", "conclusion",
+        ],
+        "documentclass": r"\documentclass[10pt, twocolumn, letterpaper]{article}",
+        "extra_preamble": r"""
+% CVPR style
+% \usepackage{cvpr}
+% 如使用 cvpr style，请取消注释并下载对应 .sty 文件
+""",
+        "extra_bibstyle": r"\bibliographystyle{ieee_fullname}",
+    },
+    "ieee": {
+        "name": "IEEE Conference",
+        "description": "IEEE 会议论文，含关键词",
+        "page_budget": "\n".join([
+            "- Abstract (~150 words)",
+            "- Introduction (~1 page)",
+            "- Related Work (~1 page)",
+            "- Methodology (~2 pages)",
+            "- Results and Discussion (~1.5 pages)",
+            "- Conclusion (~0.5 pages)",
+            "总计: 通常 6 页",
+        ]),
+        "sections": [
+            "abstract", "introduction", "related_work", "method",
+            "experiments", "results", "discussion", "conclusion",
+        ],
+        "documentclass": r"\documentclass[conference]{IEEEtran}",
+        "extra_preamble": r"""
+% IEEE style - IEEEtran class handles most formatting
+""",
+        "extra_bibstyle": r"\bibliographystyle{IEEEtran}",
+    },
+}
+
+# ── Directories (shared by all templates) ────────────────────────────────
+
+SHARED_DIRS = [
+    "sparks",
+    "outline",
+    "paper/sections",
+    "paper/figures",
+    "paper/tables",
+    "paper/build",
+    "refs/papers",
+    "refs/notes",
+    "refs/data",
+    "scripts/figures",
+    "scripts/tables",
+]
+
+
+def build_files_for_template(template_key: str) -> dict:
+    """Build the complete FILES dict for a given template."""
+    tpl = TEMPLATES[template_key]
+    files = {}
+
+    # 1. sparks/ — always the same
+    files.update(SPARKS_FILES)
+
+    # 2. outline/ — generated from sections
+    page_budget = tpl["page_budget"]
+    files["outline/structure.md"] = OUTLINE_TEMPLATES["structure"].format(
+        page_budget=page_budget
+    )
+    for sec in tpl["sections"]:
+        if sec in OUTLINE_TEMPLATES:
+            files[f"outline/{sec}.md"] = OUTLINE_TEMPLATES[sec]
+
+    # 3. paper/ — LaTeX files
+    sections_input = "\n".join(
+        rf"\input{{sections/{sec}}}" for sec in tpl["sections"]
+    )
+
+    # Handle abstract specially (it's \begin{abstract}, not \section)
+    abstract_tex = r"\begin{abstract}" + "\n% TODO: 从 outline/abstract.md 转写\n\\end{abstract}\n"
+
+    files["paper/main.tex"] = f"""{tpl['documentclass']}
+\\input{{preamble}}
+
+\\title{{__TITLE__}}
+\\author{{Author Name}}
+\\date{{\\today}}
+
+\\begin{{document}}
 \\maketitle
 
-\\input{sections/abstract}
-\\input{sections/introduction}
-\\input{sections/related_work}
-\\input{sections/method}
-\\input{sections/experiments}
-\\input{sections/results}
-\\input{sections/discussion}
-\\input{sections/conclusion}
+{sections_input}
 
-\\bibliographystyle{plain}
-\\bibliography{references}
+{tpl['extra_bibstyle']}
+\\bibliography{{references}}
 
-\\end{document}
-""",
-    "paper/preamble.tex": """\
-% 基础宏包
-\\usepackage[utf8]{inputenc}
-\\usepackage{amsmath,amssymb}
-\\usepackage{graphicx}
-\\usepackage{booktabs}
-\\usepackage{hyperref}
-\\usepackage[numbers]{natbib}
+\\end{{document}}
+"""
+
+    files["paper/preamble.tex"] = f"""% 基础宏包
+\\usepackage[utf8]{{inputenc}}
+\\usepackage{{amsmath,amssymb}}
+\\usepackage{{graphicx}}
+\\usepackage{{booktabs}}
+\\usepackage{{hyperref}}
+\\usepackage[numbers]{{natbib}}
+{tpl['extra_preamble']}
 
 % 图片路径
-\\graphicspath{{figures/}}
+\\graphicspath{{{{figures/}}}}
 
 % 自定义命令（按需添加）
-""",
-    "paper/references.bib": """\
+"""
+
+    files["paper/references.bib"] = """\
 % 参考文献
 % 示例:
 % @article{example2024,
@@ -239,54 +466,32 @@ FILES = {
 %   journal={Journal Name},
 %   year={2024}
 % }
-""",
-    "paper/sections/abstract.tex": """\
-\\begin{abstract}
-% TODO: 从 outline/abstract.md 转写
-\\end{abstract}
-""",
-    "paper/sections/introduction.tex": """\
-\\section{Introduction}
-% TODO: 从 outline/introduction.md 转写
-""",
-    "paper/sections/related_work.tex": """\
-\\section{Related Work}
-% TODO: 从 outline/related_work.md 转写
-""",
-    "paper/sections/method.tex": """\
-\\section{Method}
-% TODO: 从 outline/method.md 转写
-""",
-    "paper/sections/experiments.tex": """\
-\\section{Experiments}
-% TODO: 从 outline/experiments.md 转写
-""",
-    "paper/sections/results.tex": """\
-\\section{Results}
-% TODO: 从 outline/results.md 转写
-""",
-    "paper/sections/discussion.tex": """\
-\\section{Discussion}
-% TODO: 从 outline/discussion.md 转写
-""",
-    "paper/sections/conclusion.tex": """\
-\\section{Conclusion}
-% TODO: 从 outline/conclusion.md 转写
-""",
-    # ── build tools ──
-    "Makefile": """\
+"""
+
+    # 4. paper/sections/ — one .tex per section
+    for sec in tpl["sections"]:
+        path = f"paper/sections/{sec}.tex"
+        if sec == "abstract":
+            files[path] = abstract_tex
+        else:
+            title = SECTION_TITLES.get(sec, sec.replace("_", " ").title())
+            files[path] = LATEX_SECTION_TEMPLATE.format(title=title, name=sec)
+
+    # 5. Build tools
+    files["Makefile"] = """\
 .PHONY: pdf clean watch
 
 pdf:
-\tcd paper && tectonic -o build main.tex
+\tpaperwrite build
 
 clean:
 \trm -f paper/build/*
 
 watch:
-\tcd paper && tectonic -o build --watch main.tex
-""",
-    ".gitignore": """\
+\t@echo "Use paperwrite build for on-demand compilation"
+"""
+
+    files[".gitignore"] = """\
 paper/build/
 *.aux
 *.log
@@ -298,10 +503,25 @@ paper/build/
 *.out
 *.toc
 refs/papers/*.pdf
-""",
-}
+"""
 
-# README is separate because it uses the project name
+    return files
+
+
+def build_template_signatures(template_key: str) -> dict:
+    """Build content signatures for status detection."""
+    files = build_files_for_template(template_key)
+    sigs = {}
+    for path, content in files.items():
+        if path.endswith((".md", ".tex")) and path.startswith(
+            ("sparks/", "outline/", "paper/sections/")
+        ):
+            sigs[path] = content.strip()
+    return sigs
+
+
+# ── README template (uses project name) ──────────────────────────────────
+
 README_TEMPLATE = """\
 # {title}
 
@@ -336,20 +556,13 @@ scripts/    工具层 — 生成图表的脚本
 
 先定 `outline/structure.md` 确认论文骨架和页数预算，然后**按写作顺序**逐个填大纲：
 
-1. `outline/method.md` — 先写方法，这是你最清楚的部分
-2. `outline/experiments.md` — 实验设置紧跟方法
-3. `outline/results.md` — 有了实验才有结果
-4. `outline/introduction.md` — 知道全貌后再写引言
-5. `outline/related_work.md` — 从 sparks 笔记整理分类
-6. `outline/discussion.md` — 讨论局限性
-7. `outline/conclusion.md` — 总结
-8. `outline/abstract.md` — 最后写摘要
+{outline_order}
 
 每个大纲写到段落级别：每段说什么、用什么证据、引哪篇论文。
 
 ### Phase 3: Draft — 转写 LaTeX
 
-大纲稳定后，逐节把 `outline/*.md` 转为 `paper/sections/*.tex`，顺序同上。每写完一节 `make pdf` 看效果。图表脚本放 `scripts/`，生成的图放 `paper/figures/`。
+大纲稳定后，逐节把 `outline/*.md` 转为 `paper/sections/*.tex`，顺序同上。每写完一节 `paperwrite build` 或 `make pdf` 看效果。图表脚本放 `scripts/`，生成的图放 `paper/figures/`。
 
 ### Phase 4: Refine — 三层迭代
 
@@ -370,15 +583,28 @@ scripts/    工具层 — 生成图表的脚本
 ## 构建
 
 ```bash
-make pdf     # 编译 PDF
-make clean   # 清理编译产物
-make watch   # 持续编译（保存即编译）
+paperwrite build   # 编译 PDF
+make pdf           # 同上（快捷方式）
+make clean         # 清理编译产物
+```
+
+## 进度
+
+```bash
+paperwrite status   # 查看各文件写作进度
+paperwrite count    # 统计各节字数
 ```
 """
 
-# Template content signatures for status detection.
-# If a file's content stripped of whitespace matches its template, it's "not started".
-TEMPLATE_SIGNATURES = {}
-for path, content in FILES.items():
-    if path.endswith((".md", ".tex")) and path.startswith(("sparks/", "outline/", "paper/sections/")):
-        TEMPLATE_SIGNATURES[path] = content.strip()
+
+def build_readme(title: str, template_key: str) -> str:
+    """Build README with template-specific outline order."""
+    tpl = TEMPLATES[template_key]
+    items = []
+    for i, sec in enumerate(tpl["sections"], 1):
+        items.append(f"{i}. `outline/{sec}.md`")
+    outline_order = "\n".join(items)
+    return README_TEMPLATE.format(
+        title=title,
+        outline_order=outline_order,
+    )
