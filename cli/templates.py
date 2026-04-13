@@ -1,5 +1,10 @@
 """Multi-template system for paperwrite project scaffolding."""
 
+import configparser
+from pathlib import Path
+
+from .tex_parser import generic_outline_template, SECTION_TITLES
+
 # ── Shared sparks templates (common to all paper types) ──────────────────
 
 SPARKS_FILES = {
@@ -216,22 +221,6 @@ LATEX_SUBSECTION_TEMPLATE = """\
 % TODO: 从 outline/{name}.md 转写
 """
 
-# ── Section title mapping ───────────────────────────────────────────────
-
-SECTION_TITLES = {
-    "abstract": "Abstract",
-    "introduction": "Introduction",
-    "related_work": "Related Work",
-    "method": "Method",
-    "experiments": "Experiments",
-    "results": "Results",
-    "analysis": "Analysis",
-    "discussion": "Discussion",
-    "limitations": "Limitations",
-    "broader_impact": "Broader Impact",
-    "conclusion": "Conclusion",
-}
-
 # ── Template definitions ─────────────────────────────────────────────────
 
 TEMPLATES = {
@@ -399,9 +388,105 @@ SHARED_DIRS = [
 ]
 
 
+REF_NOTE_TEMPLATE = """\
+# {title}
+
+> 添加日期: {date}
+
+## 一句话总结
+
+<!-- 用一句话描述这篇论文做了什么 -->
+
+## 核心发现
+
+-
+
+## 方法要点
+
+-
+
+## 与我们工作的关系
+
+<!-- 这篇论文对我们有什么启发？我们在哪些方面不同/更好？ -->
+
+## 关键引用 / 摘抄
+
+-
+
+## 疑问 / 批判
+
+-
+"""
+
+
+# ── Custom template storage ─────────────────────────────────────────────
+
+CUSTOM_TEMPLATES_DIR = Path.home() / ".paperwrite" / "templates"
+
+
+def get_custom_template_keys():
+    """List keys of all imported custom templates."""
+    if not CUSTOM_TEMPLATES_DIR.exists():
+        return []
+    return sorted(
+        d.name for d in CUSTOM_TEMPLATES_DIR.iterdir()
+        if d.is_dir() and (d / "template.conf").exists()
+    )
+
+
+def load_custom_template(key):
+    """Load a custom template's metadata from template.conf.
+
+    Returns a dict matching the TEMPLATES entry format.
+    """
+    conf_path = CUSTOM_TEMPLATES_DIR / key / "template.conf"
+    if not conf_path.exists():
+        raise KeyError(f"Custom template '{key}' not found")
+
+    config = configparser.ConfigParser()
+    config.read(conf_path)
+
+    sections_str = config.get("template", "sections", fallback="")
+    sections = [s.strip() for s in sections_str.split(",") if s.strip()]
+
+    # Build page_budget from sections
+    page_budget_lines = [f"- {s.replace('_', ' ').title()}" for s in sections]
+    page_budget = "\n".join(page_budget_lines)
+
+    return {
+        "name": config.get("template", "name", fallback=key),
+        "description": config.get("template", "description", fallback=""),
+        "page_budget": page_budget,
+        "sections": sections,
+        "documentclass": config.get("template", "documentclass",
+                                    fallback=r"\documentclass[11pt]{article}"),
+        "extra_preamble": config.get("template", "extra_preamble", fallback=""),
+        "extra_bibstyle": config.get("template", "bibstyle",
+                                     fallback=r"\bibliographystyle{plain}"),
+        "_custom": True,
+        "_key": key,
+    }
+
+
+def get_all_template_keys():
+    """Return built-in keys first, then custom keys."""
+    return list(TEMPLATES.keys()) + get_custom_template_keys()
+
+
+def get_template(key):
+    """Get template dict by key — built-in first, then custom."""
+    if key in TEMPLATES:
+        return TEMPLATES[key]
+    return load_custom_template(key)
+
+
+# ── File generation ─────────────────────────────────────────────────────
+
+
 def build_files_for_template(template_key: str) -> dict:
     """Build the complete FILES dict for a given template."""
-    tpl = TEMPLATES[template_key]
+    tpl = get_template(template_key)
+    is_custom = tpl.get("_custom", False)
     files = {}
 
     # 1. sparks/ — always the same
@@ -415,6 +500,8 @@ def build_files_for_template(template_key: str) -> dict:
     for sec in tpl["sections"]:
         if sec in OUTLINE_TEMPLATES:
             files[f"outline/{sec}.md"] = OUTLINE_TEMPLATES[sec]
+        else:
+            files[f"outline/{sec}.md"] = generic_outline_template(sec)
 
     # 3. paper/ — LaTeX files
     sections_input = "\n".join(
@@ -504,6 +591,17 @@ paper/build/
 *.toc
 refs/papers/*.pdf
 """
+
+    # 6. For custom templates, copy resource files (.sty, .cls, .bst)
+    if is_custom:
+        tpl_dir = CUSTOM_TEMPLATES_DIR / tpl["_key"]
+        config = configparser.ConfigParser()
+        config.read(tpl_dir / "template.conf")
+        if config.has_section("files"):
+            for res_name, dest in config.items("files"):
+                res_path = tpl_dir / res_name
+                if res_path.exists():
+                    files[dest] = res_path.read_bytes()
 
     return files
 
@@ -599,7 +697,7 @@ paperwrite count    # 统计各节字数
 
 def build_readme(title: str, template_key: str) -> str:
     """Build README with template-specific outline order."""
-    tpl = TEMPLATES[template_key]
+    tpl = get_template(template_key)
     items = []
     for i, sec in enumerate(tpl["sections"], 1):
         items.append(f"{i}. `outline/{sec}.md`")
