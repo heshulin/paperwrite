@@ -5,7 +5,11 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-green.svg)](https://www.python.org/)
 
-写论文最怕什么？打开 LaTeX 就开始憋，憋了一下午写了两行还删了。paperwrite 的思路很简单：**先想、再排、最后写**，用三层目录（sparks → outline → paper）把思考、大纲、成文强制分开。
+写论文最怕什么？打开 LaTeX 就开始憋，憋了一下午写了两行还删了。
+
+paperwrite 的思路很简单：**先想、再排、最后写**，用三层目录（sparks → outline → paper）把思考、大纲、成文强制分开。
+
+---
 
 ## 安装
 
@@ -22,6 +26,8 @@ brew install tectonic
 # conda
 conda install -c conda-forge tectonic
 ```
+
+---
 
 ## 快速开始
 
@@ -45,6 +51,8 @@ paperwrite build
 paperwrite status   # 哪些文件写了、哪些还没动
 ```
 
+---
+
 ## 核心理念
 
 ```
@@ -54,6 +62,8 @@ sparks（想）→ outline（排）→ paper（写）
 ```
 
 **永远从上游改起。** 改实验设计不是去改 LaTeX 表格，而是回到 `sparks/experiments.md` 重新想清楚，然后顺着 outline → paper 传递下去。
+
+---
 
 ## 内置模板
 
@@ -69,6 +79,8 @@ sparks（想）→ outline（排）→ paper（写）
 ```bash
 paperwrite init my-paper -t neurips   # 直接指定模板
 ```
+
+---
 
 ## 自定义模板
 
@@ -90,22 +102,105 @@ paperwrite init my-paper -t icassp
 
 工具会自动从 `.tex` 文件中解析出 `\documentclass`、`\section{}` 结构、`\bibliographystyle`，以及 `.sty/.cls/.bst` 等资源文件，生成完整的 vibe writing 项目。
 
+---
+
 ## 命令参考
 
-| 命令 | 说明 |
-|------|------|
-| `paperwrite init <name>` | 创建论文项目（交互式选择模板） |
-| `paperwrite init <name> -t <template>` | 指定模板创建项目 |
-| `paperwrite build` | 编译 PDF |
-| `paperwrite status` | 查看各文件写作进度 |
-| `paperwrite count` | 统计各节字数 |
-| `paperwrite doctor` | 检查环境和项目完整性 |
-| `paperwrite section <name>` | 新增章节（自动创建 outline + tex 并更新 main.tex） |
-| `paperwrite ref add <pdf>` | 添加参考文献 PDF 并生成精读笔记模板 |
-| `paperwrite ref list` | 列出所有参考文献及笔记状态 |
-| `paperwrite ref note <name>` | 打开/创建指定论文的精读笔记 |
-| `paperwrite template import <path>` | 导入自定义会议模板（支持 ZIP 或目录） |
-| `paperwrite template list` | 列出所有可用模板（内置 + 自定义） |
+### `paperwrite init` — 创建论文项目
+
+在当前目录下创建一个完整的论文项目文件夹，包含 sparks / outline / paper 等目录结构。
+
+```bash
+paperwrite init my-paper              # 交互式选择模板
+paperwrite init my-paper -t acl_long  # 直接指定模板
+```
+
+### `paperwrite build` — 编译 PDF
+
+调用 tectonic 将 `paper/main.tex` 编译为 PDF，输出到 `paper/build/main.pdf`。
+
+```bash
+paperwrite build
+```
+
+### `paperwrite status` — 查看写作进度
+
+逐文件检查 sparks / outline / paper 各层中哪些已经写过了、哪些还是初始模板，并判断当前处于哪个写作阶段。
+
+```bash
+paperwrite status
+```
+
+### `paperwrite count` — 统计字数
+
+按层（sparks / outline / paper）统计每个文件的字数，帮助控制论文篇幅。
+
+```bash
+paperwrite count
+```
+
+### `paperwrite doctor` — 环境检查
+
+检查 tectonic 是否安装、项目结构是否完整、关键文件是否存在。
+
+```bash
+paperwrite doctor
+```
+
+### `paperwrite section` — 新增章节
+
+在 outline/ 和 paper/sections/ 中同时创建一个新章节文件，并自动把 `\input{sections/xxx}` 添加到 main.tex。
+
+```bash
+paperwrite section appendix           # 新增 appendix 章节
+paperwrite section future_work        # 新增 future_work 章节
+```
+
+### `paperwrite ref add` — 添加参考文献
+
+将一篇 PDF 复制到 `refs/papers/`，同时在 `refs/notes/` 中生成精读笔记模板，并自动在 `sparks/related_work.md` 中添加链接。
+
+```bash
+paperwrite ref add attention-is-all-you-need.pdf
+paperwrite ref add ~/Downloads/bert.pdf --move   # 移动而非复制
+```
+
+### `paperwrite ref list` — 列出参考文献
+
+显示 `refs/papers/` 中所有 PDF，并标记哪些已经有精读笔记。
+
+```bash
+paperwrite ref list
+```
+
+### `paperwrite ref note` — 打开精读笔记
+
+打开或创建指定论文的精读笔记（Markdown 格式），输出笔记文件路径。
+
+```bash
+paperwrite ref note attention-is-all-you-need
+paperwrite ref note bert.pdf          # 带 .pdf 后缀也可以
+```
+
+### `paperwrite template import` — 导入会议模板
+
+从 ZIP 文件或目录中解析 LaTeX 模板，自动提取 documentclass、章节结构、参考文献样式，以及 .sty/.cls/.bst 资源文件，保存为可复用的自定义模板。
+
+```bash
+paperwrite template import ./icassp-template --name icassp
+paperwrite template import interspeech-template.zip --name interspeech
+paperwrite template import ./template --name my_conf --description "My Conference 2025"
+```
+
+### `paperwrite template list` — 列出所有模板
+
+分两组显示所有可用模板：内置模板 + 用户导入的自定义模板。
+
+```bash
+paperwrite template list
+```
+
+---
 
 ## 写作工作流
 
@@ -155,6 +250,8 @@ paperwrite build
 - 控制页数，`paperwrite count` 看字数
 - `paperwrite build` 出最终版
 
+---
+
 ## 目录结构
 
 ```
@@ -182,6 +279,8 @@ my-paper/
 ├── scripts/             画图、生成表格的脚本
 └── .paperwrite          项目配置（记录所用模板）
 ```
+
+---
 
 ## 从源码安装
 
