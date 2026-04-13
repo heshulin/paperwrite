@@ -544,6 +544,18 @@ def build_files_for_template(template_key: str) -> dict:
 % 自定义命令（按需添加）
 """
 
+    # For custom templates with extracted packages, deduplicate and use only
+    # the imported packages (they already include everything the template needs)
+    if is_custom and tpl.get("extra_preamble"):
+        files["paper/preamble.tex"] = f"""% 宏包（从模板提取）
+{tpl['extra_preamble']}
+
+% 图片路径
+\\graphicspath{{{{figures/}}}}
+
+% 自定义命令（按需添加）
+"""
+
     files["paper/references.bib"] = """\
 % 参考文献
 % 示例:

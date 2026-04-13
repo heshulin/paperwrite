@@ -309,6 +309,7 @@ def template_import(path, tpl_name, tpl_desc):
 
     # Write template.conf
     config = configparser.ConfigParser()
+    extra_preamble = "\n".join(parsed.get("usepackage_lines", []))
     config["template"] = {
         "name": tpl_name or key,
         "description": tpl_desc or f"自定义模板 (从 {main_tex.name} 导入)",
@@ -316,6 +317,7 @@ def template_import(path, tpl_name, tpl_desc):
         "bibstyle": parsed["bibstyle"] or r"\bibliographystyle{plain}",
         "sections": ",".join(parsed["section_keys"]),
         "source_file": main_tex.name,
+        "extra_preamble": extra_preamble,
     }
 
     # Copy resource files
@@ -339,6 +341,8 @@ def template_import(path, tpl_name, tpl_desc):
     click.echo(f"  sections: {', '.join(parsed['section_keys'])}")
     if parsed['bibstyle']:
         click.echo(f"  bibstyle: {parsed['bibstyle']}")
+    if parsed.get("usepackage_lines"):
+        click.echo(f"  宏包: {len(parsed['usepackage_lines'])} 个 \\usepackage 已提取")
     if resource_files:
         click.echo(f"  资源文件: {', '.join(f.name for f in resource_files)}")
     click.echo(f"\n使用: paperwrite init my-paper -t {key}")

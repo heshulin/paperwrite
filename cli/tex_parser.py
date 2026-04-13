@@ -47,6 +47,10 @@ ABSTRACT_RE = re.compile(
     r'\\begin\{abstract\}'
 )
 
+USEPACKAGE_RE = re.compile(
+    r'\\usepackage\s*(?:\[([^\]]*)\])?\s*\{([^}]+)\}'
+)
+
 # ── Section key derivation ───────────────────────────────────────────────
 
 # Reverse lookup: "introduction" -> "introduction", "related work" -> "related_work"
@@ -104,6 +108,7 @@ def parse_tex_file(path: Path) -> dict:
         section_keys: list[str]  — canonical keys
         bibstyle: str or None, e.g. r'\\bibliographystyle{IEEEtran}'
         has_abstract: bool
+        usepackage_lines: list[str]  -- raw usepackage lines from preamble
     """
     text = path.read_text(encoding="utf-8", errors="replace")
 
@@ -129,6 +134,18 @@ def parse_tex_file(path: Path) -> dict:
             documentclass = f"\\documentclass{{{cls}}}"
     else:
         documentclass = "\\documentclass[11pt]{article}"
+
+    # Extract \usepackage lines (only from preamble, i.e. before \begin{document})
+    usepackage_lines = []
+    begin_doc_match = re.search(r'\\begin\{document\}', clean_text)
+    preamble_text = clean_text[:begin_doc_match.start()] if begin_doc_match else clean_text
+    for match in USEPACKAGE_RE.finditer(preamble_text):
+        opts = match.group(1) or ""
+        pkgs = match.group(2)
+        if opts:
+            usepackage_lines.append(f"\\usepackage[{opts}]{{{pkgs}}}")
+        else:
+            usepackage_lines.append(f"\\usepackage{{{pkgs}}}")
 
     # Extract sections
     section_titles = SECTION_RE.findall(clean_text)
@@ -175,6 +192,7 @@ def parse_tex_file(path: Path) -> dict:
         "section_keys": section_keys,
         "bibstyle": bibstyle,
         "has_abstract": has_abstract,
+        "usepackage_lines": usepackage_lines,
     }
 
 
