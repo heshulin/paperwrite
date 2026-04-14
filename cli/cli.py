@@ -437,7 +437,7 @@ def init(name, template_key):
     for rel_path, content in files.items():
         file_path = target / rel_path
         if rel_path == "paper/main.tex" and isinstance(content, str):
-            content = content.replace("__TITLE__", name)
+            content = content.replace("__TITLE__", templates._escape_latex(name))
         # Ensure parent directory exists (for resource files like paper/*.sty)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         if isinstance(content, bytes):

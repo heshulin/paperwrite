@@ -1,6 +1,7 @@
 """Multi-template system for paperwrite project scaffolding."""
 
 import configparser
+import re
 from pathlib import Path
 
 from .tex_parser import generic_outline_template, SECTION_TITLES
@@ -481,6 +482,18 @@ def get_template(key):
 
 
 # ── File generation ─────────────────────────────────────────────────────
+
+
+def _escape_latex(text: str) -> str:
+    """Escape LaTeX special characters in plain text (for \\title etc.)."""
+    # Escape _ # $ % & { } ~ ^ in order — backslash first to avoid double-escaping
+    text = text.replace('\\', '\\textbackslash{}')
+    for ch in ('#', '$', '%', '&', '{', '}'):
+        text = text.replace(ch, '\\' + ch)
+    text = text.replace('~', '\\textasciitilde{}')
+    text = text.replace('^', '\\textasciicircum{}')
+    text = text.replace('_', '\\_')
+    return text
 
 
 def build_files_for_template(template_key: str) -> dict:
